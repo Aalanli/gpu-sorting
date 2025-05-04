@@ -18,6 +18,10 @@
 #define LANE_LOG            5							//log2(LANE_COUNT)
 #define WARP_INDEX          (threadIdx.x >> LANE_LOG)	//Warp of a thread
 
+__host__ __device__ __forceinline__ int divup(int a, int b) {
+    return (a + b - 1) / b;
+}
+
 //PTX functions
 __device__ __forceinline__ uint32_t getLaneId() 
 {
