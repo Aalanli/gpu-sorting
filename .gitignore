@@ -33,3 +33,8 @@
 
 build
 *.ncu-rep
+*.nsys-rep
+*.cubin
+*.ptx
+*.pyc
+*.sass

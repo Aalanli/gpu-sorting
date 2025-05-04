@@ -3,7 +3,7 @@ import torch
 
 torch.ops.load_library("onesweep_cuda.cpython-310-x86_64-linux-gnu.so")
 
-arr = torch.randint(0, 1 << 29, (1000000,), dtype=torch.uint32, device="cuda")
+arr = torch.randint(0, 1 << 29, (10000,), dtype=torch.uint32, device="cuda")
 
 res = torch.ops.onesweep_cuda.one_sweep_sort(arr)
 
@@ -61,8 +61,8 @@ def benchmark_sorting(sizes, warmup=3, runs=10):
     return torch_results, onesweep_results
 
 # Test with various sizes
-sizes = list(range(1000, 100000, 1000)) #[50000, 100000, 500000, 1000000, 2500000, 5000000]
-torch_results, onesweep_results = benchmark_sorting(sizes)
+sizes = list(range(1000, 400000, 5000)) #[50000, 100000, 500000, 1000000, 2500000, 5000000]
+torch_results, onesweep_results = benchmark_sorting(sizes, warmup=10, runs=100)
 
 # Extract means and stds for plotting
 torch_means, torch_stds = zip(*torch_results)

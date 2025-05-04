@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 #include <tuple>
 #include "one_sweep.cuh"
+#include <stdio.h>
 
 class OneSweepDispatcher
 {
@@ -100,15 +101,51 @@ public:
 
         OneSweep::Scan <<<k_radixPasses, k_radix >>> (m_globalHistogram, m_firstPassHistogram, m_secPassHistogram,
             m_thirdPassHistogram, m_fourthPassHistogram);
+        cudaDeviceSynchronize();
 
+        printf("sweep\n");
         OneSweep::DigitBinningPassKeysOnly <<<binningThreadBlocks, k_binningThreads >>> (sort, m_alt, m_firstPassHistogram,
             m_index, size, 0);
+        
+            unsigned int *c_second = (unsigned int*)malloc(256 * sizeof(unsigned int));
+        cudaMemcpy(c_second, m_secPassHistogram, 256 * sizeof(unsigned int), cudaMemcpyDeviceToHost);
+        printf("c_second: ");
+        for (int i = 0; i < 256; i++)
+        {
+            printf("[%d %d]", c_second[i] & 3, c_second[i] >> 2);
+        }
+        printf("\n");
+        cudaDeviceSynchronize();
 
-        OneSweep::DigitBinningPassKeysOnly <<<binningThreadBlocks, k_binningThreads >>> (m_alt, sortResult, m_secPassHistogram,
+            printf("sweep\n");
+            OneSweep::DigitBinningPassKeysOnly <<<binningThreadBlocks, k_binningThreads >>> (m_alt, sortResult, m_secPassHistogram,
             m_index, size, 8);
+            printf("sweep\n");
+        
+            unsigned int *c_third = (unsigned int*)malloc(256 * sizeof(unsigned int));
+        cudaMemcpy(c_third, m_thirdPassHistogram, 256 * sizeof(unsigned int), cudaMemcpyDeviceToHost);
+        printf("c_third: ");
+        for (int i = 0; i < 256; i++)
+        {
+            printf("%d ", c_third[i]);
+        }
+        printf("\n");
+        cudaDeviceSynchronize();
 
         OneSweep::DigitBinningPassKeysOnly <<<binningThreadBlocks, k_binningThreads >>> (sortResult, m_alt, m_thirdPassHistogram,
             m_index, size, 16);
+            printf("sweep\n");
+            cudaDeviceSynchronize();
+
+        unsigned int *c_fourthPassHistogram = (unsigned int*)malloc(256 * sizeof(unsigned int));
+        cudaMemcpy(c_fourthPassHistogram, m_fourthPassHistogram, 256 * sizeof(unsigned int), cudaMemcpyDeviceToHost);
+        printf("c_fourthPassHistogram: ");
+        for (int i = 0; i < 256; i++)
+        {
+            printf("%d ", c_fourthPassHistogram[i]);
+        }
+        printf("\n");
+        cudaDeviceSynchronize();
 
         OneSweep::DigitBinningPassKeysOnly <<<binningThreadBlocks, k_binningThreads >>> (m_alt, sortResult, m_fourthPassHistogram,
             m_index, size, 24);
@@ -130,7 +167,7 @@ public:
 
         OneSweep::Scan <<<k_radixPasses, k_radix >>> (m_globalHistogram, m_firstPassHistogram, m_secPassHistogram,
             m_thirdPassHistogram, m_fourthPassHistogram);
-
+        
         OneSweep::DigitBinningPassPairs <<<binningThreadBlocks, k_binningThreads >>> (sort, sortPayload, m_alt, 
             m_altPayload, m_firstPassHistogram, m_index, size, 0);
 
@@ -166,6 +203,7 @@ torch::Tensor one_sweep_sort(torch::Tensor input) {
     TORCH_CHECK(input.device().type() == torch::kCUDA, "Input must be on a CUDA device");
     auto sortResult = torch::empty_like(input);
     if (size > sorter.get_max_size()) {
+        printf("Resizing sorter from %d to %d\n", sorter.get_max_size(), int(size * 1.5));
         resize_sorter(float(size * 1.5));
     }
     sorter.DispatchKernelsKeysOnly(size, input.data_ptr<uint32_t>(), sortResult.data_ptr<uint32_t>());
