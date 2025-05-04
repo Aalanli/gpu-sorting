@@ -24,5 +24,6 @@ onesweep_auto  *0.0318*  *0.0292*  *0.0337*  *0.0357*  *0.0387*  *0.0440*  *0.04
 ## Todos
 
 - [ ] Current kernel template does not work for other radix sizes
+- [ ] implement and test argsort
 - [ ] implement and test for int64 sorting
 
