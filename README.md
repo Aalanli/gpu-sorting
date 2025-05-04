@@ -15,6 +15,8 @@ torch            0.0326    0.0331    0.0346    0.0401    0.0592    0.0610    0.0
 onesweep_auto  *0.0318*  *0.0292*  *0.0337*  *0.0357*  *0.0387*  *0.0440*  *0.0438*  *0.0463*  *0.0591*  *0.0582*  *0.0619*  *0.0826*  *0.1602*  *0.2329*  *0.3252*
 ```
 
+![perf_img](https://github.com/Aalanli/gpu-sorting/blob/main/perf_results.png)
+
 ## Optimizations:
 - improve radix histogramming via fusion of histogram and scan kernels, and pipeling with shared memory for large sequence lengths
 - relieve register pressure for onesweep kernel via reduction of work performed per-block
