@@ -34,11 +34,9 @@ def bench():
     functions = [
         ("torch", lambda arr: torch.sort(arr)[0]),
         ("onesweep_auto", radix_sort_auto),
-    ] + [
-        ("onesweep", partial(radix_sort, kernel=i)) for i in range(num_kernels())
     ]
 
-    sizes = [512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144], [524288, 1048576, 2500000, 4000000, 6000000]
+    sizes = [512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2500000, 4000000, 6000000],
     for s in sizes:
         res = utils.benchmark_algos(functions, mk_args, s, warmup=10, runs=200)
         utils.pretty_print_res(res)
